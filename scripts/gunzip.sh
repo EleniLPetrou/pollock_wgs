@@ -14,7 +14,7 @@
 # Move the folders into a new directory
 PLATE3=/gscratch/scrubbed/elpetrou/pollock/fastq/Plate3
 LANE1=/gscratch/scrubbed/elpetrou/pollock/fastq/Lane1
-LANE2=/gscratch/scrubbed/elpetrou/pollock/fastq/Lane3
+LANE2=/gscratch/scrubbed/elpetrou/pollock/fastq/Lane2
 
 # unzip the fastq files in each directory
 cd $PLATE3

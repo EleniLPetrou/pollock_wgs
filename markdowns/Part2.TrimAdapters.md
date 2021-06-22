@@ -111,16 +111,23 @@ mv *_R2_001.unpaired.trim.fastq $OUTDIR
 
 ### Let's look at the trimmomatic output:
 
-Result from a typical sample:
+I navigated into the folder containing the log files produced by trimmomatic and I ran multiQc to get data summaries. 
 
-``` Input Read Pairs: 6825779 Both Surviving: 5932557 (86.91%) Forward Only Surviving: 468865 (6.87%) Reverse Only Surviving: 215887 (3.16%) Dropped: 208470 (3.05%) ```
+``` bash
 
-Here is a summary plot of the trimmomatic log files, made with multiQC:
+srun -p compute-hugemem -A merlab --nodes=1 --ntasks-per-node=1 --time=02:00:00 --mem=50G --pty /bin/bash
 
-![surviving reads plot](https://github.com/EleniLPetrou/herring_whole_genome_sequencing/blob/main/Markdown/plots/plot_trimmomatic.png)
+conda activate multiqc_env
 
-Below is a plot of adapter content for a single sample after it had been trimmed with trimmomatic. It looks just like the post-trimming plots we saw in the physalia course, so I believe that trimming was successful!
+cd ~/pollock_scripts
 
-![trimmed fastq](https://github.com/EleniLPetrou/herring_whole_genome_sequencing/blob/main/Markdown/plots/adapter_content_PORT14_013_R1.fastq_trimmed.png)
+multiqc .
+
+```
+
+On average, we retained 88% of bases after trimming sequencing adapters and poor-quality bases. 
+
+
+
 
 

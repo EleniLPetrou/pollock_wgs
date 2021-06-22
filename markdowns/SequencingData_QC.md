@@ -47,21 +47,6 @@ gunzip *fastq.gz
 
 ```
 
-## Plot distribution of raw sequences per sample
-
-I plotted the distribution of raw sequencing reads for each sample using the R script below and data provided to me by the NW Genomics Sequencing Center in .csv format (these were included in the tar files containing raw seqencing data). 
-
-Here is a summary of the raw sequencing data :
-  - We sequenced 556 herring (number of WA samples = 281; number of AK samples = 275)
-  - Average number of reads per sample = 12.88 million reads
-  - Range = 0 to 80.06 million reads
-  - Standard deviation = 4.41 million reads
-  - Seven samples sequenced poorly (reads per sample less than 2 sd from the mean)
-  -     SMBY15_012  SMBY15_018  SQUA14_045   BERN16_004  BERN16_010  BERN16_032 BERN16_031
-  - Nine samples sequenced very deeply (reads per sample more than 2 sd from mean)
-  -     CHPT16_041  ELBY15_118  ELBY15_129  ELBY15_177  QLBY19_080  QLBY19_097  BERN16_033  OLGA19_003  SITKA17_043
-
-
 ## Run FastQC
 
 To check the quality of the raw sequence data I ran the software FastQC on Klone
@@ -173,10 +158,97 @@ cd $DATADIR3
 multiqc .
 
 ```
+## Plot distribution of raw sequences per sample
 
+I plotted the distribution of raw sequencing reads for each sample using the R script below and the data summaries produced by multiqc in these files: multiqc_data/mqc_fastqc_sequence_counts_plot_1.txt. 
+
+Here is a summary of the raw sequencing data :
+
+We sequenced 633 pollock and obtained 12.02 million raw sequences per sample on average (median = 10.45 million, range = 0.02 – 49.89 million reads, sd = 6.22 million reads) 
+
+R script for plotting:
+
+``` R
+# The purpose of this script is to plot the distribution of raw sequencing reads for each herring sample. The input data are data frames specifying the raw number of reads per sample (saved as .csv files). These data were provided to me by the NW Genomics Sequencing Center.
+
+# Load libraries
+library(tidyverse)
+
+# Specify path to input files
+MYPATH <- "./sample_metadata/multiqc"
+setwd(MYPATH)
+list.files()
+
+# Specify file names
+file1 <- "Lane1_mqc_fastqc_sequence_counts_plot_1.txt" 
+file2 <- "Lane2_mqc_fastqc_sequence_counts_plot_1.txt"
+file3 <- "Plate3_mqc_fastqc_sequence_counts_plot_1.txt"
+
+# Read in the data
+Lane1_df <- read.delim(file1)
+Lane2_df <- read.delim(file2)
+Lane3_df <- read.delim(file3)
+
+Lane1_df <- Lane1_df %>%
+  separate(Sample, c("pop", "id"), sep = "_", remove = FALSE) %>%
+  unite("sample_id", pop:id, sep = "_") %>%
+  group_by(sample_id) %>%
+  summarise(sum(Unique.Reads)) %>%
+  mutate(batch = "Lane1")
+  
+Lane2_df <- Lane2_df %>%
+  separate(Sample, c("pop", "id"), sep = "_", remove = FALSE) %>%
+  unite("sample_id", pop:id, sep = "_") %>%
+  group_by(sample_id) %>%
+  summarise(sum(Unique.Reads)) %>%
+  mutate(batch = "Lane2")
+
+Lane3_df <- Lane3_df %>%
+  separate(Sample, c("pop", "id"), sep = "_", remove = FALSE) %>%
+  unite("sample_id", pop:id, sep = "_") %>%
+  group_by(sample_id) %>%
+  summarise(sum(Unique.Reads)) %>%
+  mutate(batch = "Lane3")
+
+plot_df <- rbind(Lane1_df, Lane2_df, Lane3_df)
+
+plot_df <- plot_df %>%
+  mutate(Unique.Reads.Millions = `sum(Unique.Reads)`/1000000) %>%
+  filter(sample_id != "Undetermined_S0")
+  
+
+# plot the data
+
+distro_plot <- ggplot(data = plot_df) +
+  geom_histogram(aes(x = Unique.Reads.Millions), bins = 20) +
+  facet_wrap(~batch) +
+  ylab("Number of samples") +
+  xlab("Number of raw sequences (millions)") +
+  theme_bw()
+  
+distro_plot 
+
+# Calculate some summary statistics
+(mymean <- mean(plot_df$Unique.Reads.Millions)) # mean = 12.02 million reads
+(mymedian <- median(plot_df$Unique.Reads.Millions)) # mean = 10.45 million reads
+(myrange <- range(plot_df$Unique.Reads.Millions)) #range = 0.02 to 49.89 million reads
+(mysd <- sd(plot_df$Unique.Reads.Millions)) # sd = 6.22 million reads
+
+# Flad some outlier samples
+(lower_threshold <- mymean - 2*mysd) 
+(upper_threshold <- mymean + 1*mysd)
+  
+outlier_df <- plot_df %>%
+  filter(Unique.Reads.Millions < lower_threshold | Unique.Reads.Millions > upper_threshold )
+
+
+# save output of analyses
+ggsave("plot_raw_seq_distro.pdf", distro_plot)
+
+```
 
 ### Results 
-Download the full [MultiQC html report here](https://github.com/EleniLPetrou/herring_whole_genome_sequencing/blob/main/Markdown/multiqc_report.html)
+Download the full [MultiQC html reports here](https://github.com/EleniLPetrou/herring_whole_genome_sequencing/blob/main/Markdown/multiqc_report.html)
 
 The sequencing quality looks really great for almost all samples, hurray!
 

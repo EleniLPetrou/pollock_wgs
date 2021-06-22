@@ -76,21 +76,54 @@ conda activate $MYENV
 bwa index -a bwtsw $REFGENOME $MYPREFIX
 
 ```
-The files ending in ".bt2" are the indexed genome.
+The files ending in .amb, .ann, .bwt, .pac, .sa are produced by the index command.
+
+## Align sequences to reference genome with bwa mem
+
+I am trying to do the genome alignments using the ckpt nodes. To do this, I wrote two scripts:
+ 1. bwa_mem.sh : this script has all of the sbatch directives and the bwa mem arguments
+ 2. slurm_parallel_bwamem.sh: this script call bwa_mem.sh on every sample in a directory and distributes the jobs to different ckpt threads and/or cpus.
+ 
+ To call these scripts together, navigate to the directory where they are saved in Klone and type: ``` bash slurm_parallel_bwamem.sh```
+ 
+ Here is bwa_mem.sh:
+ 
+ ``` bash
+ #!/bin/bash
+#SBATCH --job-name=pollock_bwamem
+#SBATCH --account=merlab
+#SBATCH --partition=ckpt
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
+## Walltime (days-hours:minutes:seconds format)
+#SBATCH --time=2:00:00
+## Memory per node
+#SBATCH --mem=20G
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=elpetrou@uw.edu
+## Specify the working directory for this job
+#SBATCH --chdir=/gscratch/scrubbed/elpetrou/pollock/fastq_trimmed/fastq_PWS20
 
 
-##################################################################################################
-## Align sequences to reference genome with bowtie2
-
-The command bowtie2 takes a Bowtie2 index and set of sequencing read files and outputs set of alignments in SAM format. I wrote a bash script containing the bowtie2 commands for aligning paired end data. Here it is:
-
-```
-!/bin/bash
 ##### ENVIRONMENT SETUP ##########
-GENOMEDIR=/gscratch/merlab/genomes/atlantic_herring #location of genome
-GENOME_PREFIX=GCF_900700415.1_Ch_v2.0.2 #prefix of .bt2 files made by bowtie2
+MYCONDA=/gscratch/merlab/software/miniconda3/etc/profile.d/conda.sh # path to conda installation on our Klone node. Do NOT change this.
+MYENV=bwa_env #name of the conda environment containing samtools software. 
+
+## Specify directories with data
+REFGENOME=/gscratch/merlab/genomes/atlantic_cod/GCF_902167405.1_gadMor3.0_genomic.fna #path to ref genome that was indexed by bwa
 SUFFIX1=_R1_001.trim.fastq # Suffix to trimmed fastq files. The forward reads with paired-end data.
 SUFFIX2=_R2_001.trim.fastq # Suffix to trimmed fastq files. The reverse reads with paired-end data.
+
+##################################################################
+## Activate the conda environment:
+## start with clean slate
+module purge
+
+## This is the filepath to our conda installation on Klone. Source command will allow us to execute commands from a file in the current shell
+source $MYCONDA
+
+## activate the conda environment
+conda activate $MYENV
 
 ###################################
 
@@ -100,47 +133,33 @@ MYBASE=$(basename --suffix=$SUFFIX1 "$1")
 # Sanity check
 echo "$1"
 echo $MYBASE
-echo ${MYBASE}$SUFFIX1
-echo ${MYBASE}$SUFFIX2
-echo ${MYBASE}.sam
 
-# Run bowtie
-bowtie2 -x $GENOMEDIR'/'$GENOME_PREFIX \
---phred33 -q \
--1 ${MYBASE}$SUFFIX1 \
--2 ${MYBASE}$SUFFIX2 \
--S ${MYBASE}.sam \
---very-sensitive \
---minins 0 --maxins 1500 --fr \
---threads ${SLURM_JOB_CPUS_PER_NODE} \
---rg-id ${MYBASE} --rg SM:${MYBASE} --rg LB:${MYBASE} --rg PU:Lane1 --rg PL:ILLUMINA
+## options explained
+#-M : mark shorter split hits as secondary
+# -t INT        number of threads [1]
+#<index_prefix> is the index for the reference genome generated from bwa index
+# input_reads_pair_1.fastq, input_reads_pair_2.fastq are the input files of sequencing data that is paired-end
+# -o FILE       sam file to output results to [stdout]
 
-```
+#bwa mem -M -t 1 <idxbase> <in1.fq> [in2.fq]
 
-I did some tests and found that it took ~30 min to align a single sample to the genome, using 20 or 32 threads. Additionally, memory is not an issue for bowtie2 because it has a small memory footprint (3-4 Gb). Given that our node on Klone has 40 cores, I realized that I should stack "2 jobs" with 20 cores each and run them in parallel. To do this, I divided the fastq files into two folders and used a separate sbatch script to submit the job for each folder, like this : ` sbatch slurm_parallel_bowtie2.sh`. It's not the most elegant solution in the world but it reduced overall analysis time to 15 min per sample. 
+bwa mem -M -t ${SLURM_JOB_CPUS_PER_NODE} $REFGENOME ${MYBASE}$SUFFIX1 ${MYBASE}$SUFFIX2 -o ${MYBASE}.sam
 
-Here is the sbatch script to do this:
+ ```
 
-```
+
+Here is slurm_parallel_bwamem.sh:
+
+``` bash
 #!/bin/bash
-#SBATCH --job-name=elp_bowtie2_AK
-#SBATCH --account=merlab
-#SBATCH --partition=compute-hugemem
-#SBATCH --nodes=1
-#SBATCH --cpus-per-task=20
-## Walltime (days-hours:minutes:seconds format)
-#SBATCH --time=6-8:00:00
-## Memory per node
-#SBATCH --mem=80G
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=elpetrou@uw.edu
-## Specify the working directory for this job
-#SBATCH --chdir=/mmfs1/gscratch/scrubbed/elpetrou/fastq_trimmed/AK
 
 ## Job-specific Variables
 ###############################################
 # Specify the path to your scipt and its name
-MYSCRIPT=/mmfs1/home/elpetrou/scripts/parallel_bowtie2.sh
+MYSCRIPT=/mmfs1/home/elpetrou/pollock_scripts/bwa_mem.sh
+
+# Path to directory with fastq files
+DATADIR=/gscratch/scrubbed/elpetrou/pollock/fastq_trimmed/fastq_PWS20
 
 # Specify suffix of files to analyze
 SUFFIX1=_R1_001.trim.fastq
@@ -150,22 +169,17 @@ SUFFIX1=_R1_001.trim.fastq
 chmod +x $MYSCRIPT
 
 # Run the script on each file in the current directory
-for i in *$SUFFIX1
+for i in $DATADIR'/'*$SUFFIX1
 do
 	echo $i
-	$MYSCRIPT $i
+	sbatch $MYSCRIPT $i
+	sleep 1
 done
 
 ```
-Next, I parsed the bowtie2 log files to estimate the average alignment rate across all samples. I did this quickly like this:
 
-``` bash
-LOGFILE=bowtie2_.out
-OUFILE=bowtie2_unique_alignments.txt
 
-grep -w "aligned concordantly exactly 1 time" $LOGFILE >> $OUTFILE
-```
-
+########################################################################################################
 On average, it looks like ~86% of sequences are aligning to the Atlantic herring genome and 56% are aligning uniquely. I hope this translates into some nice data downstream!
 
 ## Use Samtools to convert sam to bam, format filter for quality & alignment, and sort bame files

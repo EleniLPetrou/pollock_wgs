@@ -162,10 +162,6 @@ multiqc .
 
 I plotted the distribution of raw sequencing reads for each sample using the R script below and the data summaries produced by multiqc in these files: multiqc_data/mqc_fastqc_sequence_counts_plot_1.txt. 
 
-Here is a summary of the raw sequencing data :
-
-We sequenced 633 pollock and obtained 12.02 million raw sequences per sample on average (median = 10.45 million, range = 0.02 – 49.89 million reads, sd = 6.22 million reads) 
-
 R script for plotting:
 
 ``` R
@@ -248,11 +244,16 @@ ggsave("plot_raw_seq_distro.pdf", distro_plot)
 ```
 
 ### Results 
-Download the full [MultiQC html reports here](https://github.com/EleniLPetrou/herring_whole_genome_sequencing/blob/main/Markdown/multiqc_report.html)
 
-The sequencing quality looks really great for almost all samples, hurray!
+We sequenced 633 pollock and obtained 12.02 million raw sequences per sample on average (median = 10.45 million, range = 0.02 – 49.89 million reads, sd = 6.22 million reads) 
 
-![phred_plot](https://github.com/EleniLPetrou/herring_whole_genome_sequencing/blob/main/Markdown/plots/plot_fastqc_mean_qual_scores_raw.png)
+Check out the distribution of raw sequences per sample: 
+
+![raw_seq_plot](https://github.com/EleniLPetrou/pollock_wgs/blob/main/markdowns/plots/raw_seq_distro.png)
+
+Check out the sequencing quality for one of the Lanes (Lane1):
+
+![phred_plot](https://github.com/EleniLPetrou/pollock_wgs/blob/main/markdowns/plots/Lane1_seq_quality.png)
 
 
 

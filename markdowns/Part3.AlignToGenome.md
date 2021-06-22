@@ -34,27 +34,52 @@ The first and basic step of running bwa is to index the genome. The basic usage 
 bwa index [-a bwtsw|is] input_reference.fasta index_prefix
 
 ```
-input_reference.fasta is an input file of sequence reads in fasta format, and index_prefix is the prefix of the generated index files. The option -a is required and can have two values: bwtsw (does not work for short genomes) and is (does not work for long genomes). Therefore, this value is chosen according to the length of the genome. I think we use the value -a bwtsw
+input_reference.fasta is an input file of sequence reads in fasta format, and index_prefix is the prefix of the generated index files. The option -a is required and can have two values: bwtsw (does not work for short genomes) and is (does not work for long genomes). Therefore, this value is chosen according to the length of the genome. I think we use the value -a bwtsw.
 
-#############################################################################################################################
-Here is how I indexed the genome:
 
-```
-srun -p compute-hugemem -A merlab --nodes=1 \
---ntasks-per-node=1 --time=02:00:00 \
---mem=40G --pty /bin/bash
+``` bash
 
-# Specify files
-GENOME=/gscratch/merlab/genomes/atlantic_herring/GCF_900700415.1_Ch_v2.0.2_genomic.fna
-INDEX_PREFIX=GCF_900700415.1_Ch_v2.0.2
+#!/bin/bash
+#SBATCH --job-name=pollock_bwaindex
+#SBATCH --account=merlab
+#SBATCH --partition=compute-hugemem
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+## Walltime (days-hours:minutes:seconds format)
+#SBATCH --time=2-12:00:00
+## Memory per node
+#SBATCH --mem=100G
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=elpetrou@uw.edu
 
-# Run bowtie2-build
-bowtie2-build -f $GENOME $INDEX_PREFIX
+
+##### ENVIRONMENT SETUP ##########
+MYCONDA=/gscratch/merlab/software/miniconda3/etc/profile.d/conda.sh # path to conda installation on our Klone node. Do NOT change this.
+MYENV=bwa_env #name of the conda environment containing samtools software. 
+
+## Specify directories with data
+REFGENOME=/gscratch/merlab/genomes/atlantic_cod/GCF_902167405.1_gadMor3.0_genomic.fna #path to fasta genome
+MYPREFIX=GCF_902167405.1_gadMor3.0_genomic
+##################################################################
+## Activate the conda environment:
+## start with clean slate
+module purge
+
+## This is the filepath to our conda installation on Klone. Source command will allow us to execute commands from a file in the current shell
+source $MYCONDA
+
+## activate the conda environment
+conda activate $MYENV
+
+## Index the genome using bwa
+
+bwa index -a bwtsw $REFGENOME $MYPREFIX
 
 ```
 The files ending in ".bt2" are the indexed genome.
 
 
+##################################################################################################
 ## Align sequences to reference genome with bowtie2
 
 The command bowtie2 takes a Bowtie2 index and set of sequencing read files and outputs set of alignments in SAM format. I wrote a bash script containing the bowtie2 commands for aligning paired end data. Here it is:

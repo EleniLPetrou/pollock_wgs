@@ -7,30 +7,36 @@ I navigated to the NCBI RefSeq website and found the Atlantic cod genome, GadMor
   - Assembly information: GCA_902167405.1 gadMor3.0 scaffolds: 227 contigs: 1,442 N50: 1,015,663 L50: 169
 
 
-I downloaded all files (fasta =GCF_902167405.1_gadMor3.0_genomic.fna.gz, gff = GCF_902167405.1_gadMor3.0_genomic.gff.gz) and uploaded them to Klone here: 
+I downloaded all files (fasta =GCF_902167405.1_gadMor3.0_genomic.fna.gz, gff = GCF_902167405.1_gadMor3.0_genomic.gff.gz) and uploaded them to Klone. I was working from a Windows laptop, so I used putty and the windows command terminal to do this:
 
-``` /gscratch/merlab/genomes/atlantic_cod ```
+```
+pscp C:\Users\elpet\OneDrive\Documents\pollock\genome\* elpetrou@klone.hyak.uw.edu:/gscratch/merlab/genomes/atlantic_cod
 
+```
  
 ## Install bwa-mem on Klone
 
-I installed bowtie2 v2.4.2 on the MerLab node by logging into a Klone terminal and typing these commands:
+I installed bwa v0.7.17 on Klone in a conda environment called bwa_env using the following commands:
+
+``` bash
+
+cd /gscratch/merlab/software/miniconda3/envs
+conda create -n bwa_env
+conda activate bwa_env
+conda install -c bioconda bwa
 
 ```
 
-```
-
-
-#######################################################################################################################################
-## Index the reference genome with bowtie2
-The first and basic step of running Bowtie2 is to build Bowtie2 index from a reference genome sequence. The basic usage of the command bowtie2-build is:
+## Index the reference genome with bwa
+The first and basic step of running bwa is to index the genome. The basic usage of this command is:
 
 ```
-bowtie2-build -f input_reference.fasta index_prefix
+bwa index [-a bwtsw|is] input_reference.fasta index_prefix
 
 ```
-input_reference.fasta is an input file of sequence reads in fasta format, and index_prefix is the prefix of the generated index files. The option -f that is used when the reference input file is a fasta file.
+input_reference.fasta is an input file of sequence reads in fasta format, and index_prefix is the prefix of the generated index files. The option -a is required and can have two values: bwtsw (does not work for short genomes) and is (does not work for long genomes). Therefore, this value is chosen according to the length of the genome. I think we use the value -a bwtsw
 
+#############################################################################################################################
 Here is how I indexed the genome:
 
 ```

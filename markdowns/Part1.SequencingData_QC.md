@@ -49,7 +49,8 @@ gunzip *fastq.gz
 
 ## Merge Fastq files for samples that were run on NovaseqSP lane ("Plate3" samples)
 
-According to Erica from the UW Genomics Core, the samples run on a Novaseq XP lane we run without a lane splitter, so they have some fastq files that need to be concatenated. 
+According to Erica from the UW Genomics Core, the samples run on a Novaseq XP lane we run without a lane splitter, so they have some fastq files that need to be concatenated. These samples came fom the following populations: BOG02, NBS17, PWS17, and SHE17.
+
 This is how I concatenated the two R1 and R2 fastq files for each sample ("mergelanes.sh")
 
 ``` bash

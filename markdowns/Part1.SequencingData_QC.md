@@ -297,7 +297,7 @@ ggsave("plot_raw_seq_distro.pdf", distro_plot)
 
 ### Results 
 
-We sequenced 633 pollock and obtained 12.02 million raw sequences per sample on average (median = 10.45 million, range = 0.02 – 49.89 million reads, sd = 6.22 million reads) 
+We sequenced 633 pollock and obtained 14.30 million raw sequences per sample on average (median = 10.73 million, range = 0.04 – 61.28 million reads, sd = 9.91 million reads) 
 
 Check out the distribution of raw sequences per sample: 
 

@@ -301,7 +301,7 @@ We sequenced 633 pollock and obtained 14.30 million raw sequences per sample on 
 
 Check out the distribution of raw sequences per sample: 
 
-![raw_seq_plot](https://github.com/EleniLPetrou/pollock_wgs/blob/main/markdowns/plots/raw_seq_distro.png)
+![raw_seq_plot](https://github.com/EleniLPetrou/pollock_wgs/blob/main/markdowns/plots/raw_seq_distro_updated.png)
 
 Check out the sequencing quality for one of the Lanes (Lane1):
 

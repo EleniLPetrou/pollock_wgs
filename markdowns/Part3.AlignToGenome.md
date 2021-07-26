@@ -198,18 +198,18 @@ conda activate samtools_env
 conda install -c bioconda htslib samtools openssl=1.0
 
 ```
-I was able to run samtools, using this script (samtools_sbatch.sh):
+I was able to run samtools, using this script (samtools.sh):
 
 
 ```
 #!/bin/bash
-#SBATCH --job-name=elp_samtools
+#SBATCH --job-name=pollock_samtools
 #SBATCH --account=merlab
 #SBATCH --partition=compute-hugemem
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=20
+#SBATCH --ntasks-per-node=16
 ## Walltime (days-hours:minutes:seconds format)
-#SBATCH --time=3-12:00:00
+#SBATCH --time=6-12:00:00
 ## Memory per node
 #SBATCH --mem=100G
 #SBATCH --mail-type=ALL
@@ -218,7 +218,7 @@ I was able to run samtools, using this script (samtools_sbatch.sh):
 
 ##### ENVIRONMENT SETUP ##########
 ## Specify the directory containing data
-DATADIR=/mmfs1/gscratch/scrubbed/elpetrou/bam #directory with sam files
+DATADIR=/gscratch/scrubbed/elpetrou/pollock/sam #directory with sam files
 SUFFIX1=.sam #file suffix
 MYCONDA=/gscratch/merlab/software/miniconda3/etc/profile.d/conda.sh # path to conda installation on our Klone node. Do NOT change this.
 MYENV=samtools_env #name of the conda environment containing samtools software. 
@@ -256,6 +256,8 @@ done
 
 ## deactivate the conda environment
 conda deactivate
+
+
 
 ```
 ## Use picard to remove PCR duplicates; use bamUtil to clip overlapping read pairs

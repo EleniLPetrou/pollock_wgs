@@ -280,7 +280,7 @@ Run an sbatch script to conduct the analysis:
 #SBATCH --account=merlab
 #SBATCH --partition=compute-hugemem
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=20
+#SBATCH --ntasks-per-node=16
 ## Walltime (days-hours:minutes:seconds format)
 #SBATCH --time=3-12:00:00
 ## Memory per node
@@ -290,7 +290,7 @@ Run an sbatch script to conduct the analysis:
 
 ##### ENVIRONMENT SETUP ####################################################
 ## Specify the directory containing data
-DATADIR=/mmfs1/gscratch/scrubbed/elpetrou/bam #directory containing bam files
+DATADIR=/mmfs1/gscratch/scrubbed/elpetrou/pollock/bam #directory containing bam files
 SUFFIX1=_minq20_sorted.bam # suffix to sorted and quality-filtered bam files produced in previous step of pipeline.
 MYCONDA=/gscratch/merlab/software/miniconda3/etc/profile.d/conda.sh # path to conda installation on our Klone node. Do NOT change this.
 MYENV=picard_env #name of the conda environment containing picard software. 
@@ -322,6 +322,7 @@ done
 
 ## Leave the picard conda environment
 conda deactivate
+
 
 ```
 ## Use GATK3 to realign bam reads around indels
@@ -358,20 +359,20 @@ Next, I ran the pipeline for indel realignment. The first step is to identify po
 #SBATCH --account=merlab
 #SBATCH --partition=compute-hugemem
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=8
+#SBATCH --ntasks-per-node=16
 ## Walltime (days-hours:minutes:seconds format)
-#SBATCH --time=4-12:00:00
+#SBATCH --time=3-12:00:00
 ## Memory per node
-#SBATCH --mem=80G
+#SBATCH --mem=300G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=elpetrou@uw.edu
 
 ##### ENVIRONMENT SETUP ####################################################
 ## Specify the directories and file names containing your data (edit lines 16-20 as needed)
-DATADIR=/gscratch/scrubbed/elpetrou/bam #path to the bam files that you want to analyze with GATK3
-GENOMEDIR=/gscratch/merlab/genomes/atlantic_herring #directory containing the genome
-REFERENCE=GCF_900700415.1_Ch_v2.0.2_genomic.fna # Name of genome
-BASEREFERENCE=GCF_900700415.1_Ch_v2.0.2_genomic #Name of genome without file extension
+DATADIR=/gscratch/scrubbed/elpetrou/pollock/bam #path to the bam files that you want to analyze with GATK3
+GENOMEDIR=/gscratch/merlab/genomes/atlantic_cod #directory containing the genome
+REFERENCE=GCF_902167405.1_gadMor3.0_genomic.fna # Name of genome
+BASEREFERENCE=GCF_902167405.1_gadMor3.0_genomic #Name of genome without file extension
 SUFFIX1=_minq20_sorted_dedup_overlapclipped.bam #Suffix of the bam files that you would like to analyze using GATK3
 
 ## Specify some information about the conda environments, singularities, and names of intermediate files. You probably do NOT need to edit this information.
@@ -397,13 +398,13 @@ samtools faidx $GENOMEDIR'/'$REFERENCE
 # Make a text file containing a list of all the bam files you want to analyze
 for MYSAMPLEFILE in $DATADIR'/'*$SUFFIX1
 do
-echo $MYSAMPLEFILE >> $BAMLIST
+    echo $MYSAMPLEFILE >> $BAMLIST
 done
 
 # Use samtools to index each bam file - this works!!
 for MYSAMPLEFILE in $DATADIR'/'*$SUFFIX1
 do
-samtools index $MYSAMPLEFILE
+    samtools index $MYSAMPLEFILE
 done
 
 #leave the samtools conda environment
@@ -432,6 +433,8 @@ java -jar $GATK3 \
 -nt ${SLURM_JOB_CPUS_PER_NODE} \
 -o $DATADIR'/'all_samples_for_indel_realigner.intervals \
 -drf BadMate
+
+
 
 ```
 

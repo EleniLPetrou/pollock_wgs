@@ -178,7 +178,7 @@ done
 
 ```
 
-## Add read groups to sam files (needed for downstream analyses)
+## Add read groups to sam files (needed for downstream analyses like indel realignment)
 
 ``` bash
 
@@ -252,7 +252,8 @@ conda install -c bioconda htslib samtools openssl=1.0
 I was able to run samtools, using this script (samtools.sh):
 
 
-```
+``` bash
+
 #!/bin/bash
 #SBATCH --job-name=pollock_samtools
 #SBATCH --account=merlab
@@ -270,7 +271,7 @@ I was able to run samtools, using this script (samtools.sh):
 ##### ENVIRONMENT SETUP ##########
 ## Specify the directory containing data
 DATADIR=/gscratch/scrubbed/elpetrou/pollock/sam #directory with sam files
-SUFFIX1=.sam #file suffix
+SUFFIX1=_RG.sam #file suffix
 MYCONDA=/gscratch/merlab/software/miniconda3/etc/profile.d/conda.sh # path to conda installation on our Klone node. Do NOT change this.
 MYENV=samtools_env #name of the conda environment containing samtools software. 
 
@@ -294,7 +295,7 @@ for MYSAMPLEFILE in *$SUFFIX1
 do
     echo $MYSAMPLEFILE
     MYBASE=`basename --suffix=$SUFFIX1 $MYSAMPLEFILE`
-    samtools view -bS -F 4 $MYBASE'.sam' > $MYBASE'.bam'
+    samtools view -bS -F 4 $MYBASE'_RG.sam' > $MYBASE'.bam'
     samtools view -h -q 20 $MYBASE'.bam' | samtools view -buS - | samtools sort -o $MYBASE'_minq20_sorted.bam'
     samtools index $MYBASE'_minq20_sorted.bam'
 done
@@ -307,8 +308,6 @@ done
 
 ## deactivate the conda environment
 conda deactivate
-
-
 
 ```
 ## Use picard to remove PCR duplicates; use bamUtil to clip overlapping read pairs

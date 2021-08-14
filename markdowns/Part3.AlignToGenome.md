@@ -448,7 +448,7 @@ samtools faidx $GENOMEDIR'/'$REFERENCE
 # Make a text file containing a list of all the bam files you want to analyze
 for MYSAMPLEFILE in $DATADIR'/'*$SUFFIX1
 do
-    echo $MYSAMPLEFILE >> $BAMLIST
+    echo $MYSAMPLEFILE > $BAMLIST
 done
 
 # Use samtools to index each bam file - this works!!

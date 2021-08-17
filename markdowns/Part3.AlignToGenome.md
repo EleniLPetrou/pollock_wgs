@@ -233,7 +233,7 @@ conda deactivate
 
 
 
-## Use Samtools to convert sam to bam, format filter for quality & alignment, and sort bame files
+## Use Samtools to convert sam to bam, format filter for quality & alignment, and sort bam files
 
 I first had to install samtools on Klone, and that was a pain because I was having trouble with the version of openssl that samtools uses. To get around this issue, I decided to create a special conda environment for samtools v1.12. This how I did it:
 

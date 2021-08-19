@@ -505,9 +505,9 @@ Next, each bam file was realigned around potential indels. This was slow (took 1
 
 ##### ENVIRONMENT SETUP ####################################################
 ## Specify the directories and file names containing your data (edit lines 16-20 as needed)
-DATADIR=/gscratch/scrubbed/elpetrou/bam #path to the bam files that you want to analyze with GATK3
-GENOMEDIR=/gscratch/merlab/genomes/atlantic_herring #directory containing the genome
-REFERENCE=GCF_900700415.1_Ch_v2.0.2_genomic.fna # Name of genome
+DATADIR=/gscratch/scrubbed/elpetrou/pollock/bam #path to the bam files that you want to analyze with GATK3
+GENOMEDIR=/gscratch/merlab/genomes/atlantic_cod #directory containing the genome
+REFERENCE=GCF_902167405.1_gadMor3.0_genomic.fna # Name of genome
 BAMLIST=bam_list_dedup_overlapclipped.list # A list of merged, deduplicated, and overlap-clipped bam files. This file has to have a suffix of ".list"
 
 ## Specify some information about the conda environments and names of intermediate files. You probably do NOT need to edit this information.

@@ -544,7 +544,7 @@ conda deactivate
 
 ## Back up realigned bam files to LOLO Archive
 
-Since bam realignment took such a long time, I decided to back up a copy of the realigned bam files (and the associated .bai files) to the LOLO archive: /archive/merlab/herring_wgs/realigned_bam
+Since bam realignment took such a long time, I decided to back up a copy of the realigned bam files (and the associated .bai files) to the LOLO archive: /archive/merlab/pollock_wgs/realigned_bam
 
 Explanation of tar command:
 
@@ -560,21 +560,30 @@ Explanation of tar command:
 
 ``` bash
 
+#!/bin/bash
+#SBATCH --job-name=pollock_bwamem
+#SBATCH --account=merlab
+#SBATCH --partition=compute-hugemem
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+## Walltime (days-hours:minutes:seconds format)
+#SBATCH --time=12:00:00
+## Memory per node
+#SBATCH --mem=400G
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=elpetrou@uw.edu
+
+
+#######################################################################
 # Compress all realigned bam files and transfer them to LOLO
 # I think this will take around 24 hours to do
-srun -p compute-hugemem -A merlab --nodes=1 --ntasks-per-node=1 --time=2-10:00:00 --mem=20G --pty /bin/bash
 
-cd /gscratch/scrubbed/elpetrou/realigned_bam
+DATADIR=/gscratch/scrubbed/elpetrou/pollock/realigned_bam # The directory containing trimmed fastq files
+ARCHIVE_NAME=pollock_realigned_bam_archive.tar.gz
+cd $DATADIR
 
-# tar all the files in this directory
-tar -zcvf realigned_bam_archive.tar.gz /gscratch/scrubbed/elpetrou/realigned_bam
-
-# Transfer tarred archive from a hyak login node to LOLO
-MYFILE=/mmfs1/gscratch/scrubbed/elpetrou/realigned_bam/realigned_bam_archive.tar.gz
-TARGETDIR=elpetrou@lolo.uw.edu:/archive/merlab/herring_wgs/realigned_bam
-
-scp $MYFILE $TARGETDIR
-
+# Compress a whole directory in unix
+tar -zcvf $ARCHIVE_NAME $DATADIR
 
 
 ```

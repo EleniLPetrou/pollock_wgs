@@ -160,8 +160,8 @@ Following this, I plotted the output data using another R script ("plot_realigne
 library(tidyverse)
 
 # To run this code, put all of your depth files in a single directory
-#DATADIR <- "C:/Users/elpet/OneDrive/Documents/herring_postdoc/realigned_bam"
-DATADIR <- "/gscratch/scrubbed/elpetrou/bam/"
+
+DATADIR <- "/gscratch/scrubbed/elpetrou/pollock/realigned_bam/"
 
 # set working directory
 setwd(DATADIR)

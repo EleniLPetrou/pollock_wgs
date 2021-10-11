@@ -223,6 +223,7 @@ ggsave("sequencing_depth_after_realignment.pdf", plot1)
 ```
 # Results
 
-The mean sequencing depth across the entire reference genome was 0.8X (median = 0.79, range = 0.24 – 4.73X).
+The mean sequencing depth across the entire reference genome was 1.34X (median = 1.19X, range = 0.002 – 5.57X). Some samples were sequenced more deeply than others because they were included on the "pilot" NovaSeq SP lane. Additionally, some of variation in sequencing depth was driven by the quality of input DNA (i.e., whether a sample was degraded or not). I identified samples that had a sequencing depth that was less than 0.3X and these were removed from downstream analyses (N=16). 
 
-Information to add: 1) plot 2) how low-depth individuals were identified and removed from downstream analyses 3) list of removed infividuals
+
+

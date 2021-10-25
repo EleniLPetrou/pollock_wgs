@@ -76,6 +76,6 @@ conda deactivate
 
 ## Summary of results with filtering parameters used above:
  - Total number of sites (including in mtDNA) that are genotyped in more than 70% of samples and have 1% MAF = 11,822,695
- - Total number of sites (including in mtDNA) that are genotyped in more than 70% of samples and have 5% MAF = 5,322,158
+ - Total number of sites (including in mtDNA) that are genotyped in more than 70% of samples and have 5% MAF = 5,316,001
 
 This is so interesting. Many more SNPs in the pollock data set than the herring data set.

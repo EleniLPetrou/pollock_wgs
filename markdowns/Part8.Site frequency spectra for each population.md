@@ -69,7 +69,7 @@ SITES_FILE=/gscratch/scrubbed/elpetrou/pollock/angsd/samples617_maf0.05_miss0.3.
 OUTDIR=/gscratch/scrubbed/elpetrou/pollock/angsd_sfs #directory for output files
 
 ## Specify filtering values for angsd
-FILTERS="-minMapQ 30 -minQ 20 -minInd 20 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1"
+FILTERS="-minMapQ 30 -minQ 20 -minInd 10 -uniqueOnly 1 -remove_bads 1 -only_proper_pairs 1"
 
 ## Specify output options for angsd
 OPTIONS="-GL 1 -doMaf 1 -doSaf 1 -doMajorMinor 3"

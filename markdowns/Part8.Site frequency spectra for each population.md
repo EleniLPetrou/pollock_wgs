@@ -144,6 +144,11 @@ conda deactivate
 	
 
 ```
+## Download the results of these analyses to local computer
+``` bash
+scp elpetrou@klone.hyak.uw.edu:/gscratch/scrubbed/elpetrou/pollock/angsd_sfs/*.global.fst /mnt/hgfs/D
+```
+
 
 ## Concantenate results of pairwise population FST and save them to a text file
 

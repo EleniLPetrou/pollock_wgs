@@ -62,7 +62,7 @@ conda deactivate
 
 # Download the data to local computer
 ``` 
-scp elpetrou@klone.hyak.uw.edu:/gscratch/scrubbed/elpetrou/pollock/angsd_sfs/*slidingwindow.fst /hgfs/mnt/D
+scp elpetrou@klone.hyak.uw.edu:/gscratch/scrubbed/elpetrou/pollock/angsd_sfs/*slidingwindow.fst /mnt/hgfs/D
 ```
 
 
@@ -78,22 +78,36 @@ library(viridis)
 library(scales)
 
 # Specify working directory and input files
-DATADIR <- "E:/Dropbox (MERLAB)/Eleni/postdoc_wgs/results/angsd/all_samples_maf0.05_miss_0.3/WA_comparisons"
+DATADIR <- "E:/Dropbox (MERLAB)/Eleni/pollock/results/angsd/samples617_miss0.3_maf0.05_nuclear/sliding_window"
 
-CHROMFILE <- "E:/Dropbox (MERLAB)/Eleni/postdoc_wgs/chrom_lookup_table.txt" #tab-delimited table that has refseq chrom name and simplified name (LG1, etc.)
+# Tab-delimited table that has refseq chrom name and simplified name ( Chr 1, etc.)
+CHROMFILE <- "E:/Dropbox (MERLAB)/Eleni/pollock/chrom_lookup_table.txt" 
+
+# Full path to sampling location metadata
+METAFILE <- "E:/Dropbox (MERLAB)/Eleni/pollock/sample_metadata/collection_site_metadata.txt" 
+
 
 # Specify the name of the outpt file (pdf)
-OUTFILE <- "plot_fst_sliding_windows_grid_WASamples.pdf"
+OUTFILE <- "plot_fst_sliding_windows_samples617_miss0.3_maf0.05.pdf"
 
 # Specify the population you would like to focus on, and a full list of population names
-FOCALPOP <- "CHPT16"
-POPLIST <- as.vector(c("SQUA14", "PORT14", "SMBY15", "QLBY19", "ELBY15", "CHPT16"))
+FOCALPOP <- "PWS20"
 
-#################################################################################
 #################################################################################
 # Read in files
 setwd(DATADIR)
 
+chrom_df <- read.table(CHROMFILE, header = TRUE)
+meta_df <- read.delim(METAFILE, header = TRUE) 
+
+# Specify the order of some factors in coord_df for plotting later
+meta_df$pop <- factor(meta_df$pop, levels = meta_df$pop)
+meta_df$location <- factor(meta_df$location, levels = meta_df$location)
+meta_df$mypalette <- factor(meta_df$mypalette, levels = meta_df$mypalette)
+
+POPLIST <- meta_df$pop
+
+#################################################################################
 # Remove the FOCALPOP from the POPLIST
 COMPARISONS <- subset(POPLIST, !(POPLIST %in% FOCALPOP))
 
@@ -104,7 +118,7 @@ WILDCARD <- paste0("*",FOCALPOP,"*","slidingwindow.fst")
 FILENAMES <- Sys.glob(WILDCARD) #this is R's version of a wildcard
 file_list <- as.list(FILENAMES)
 
-chrom_df <- read.table(CHROMFILE, header = TRUE)
+
 
 ################################################################################
 # Part 1: Create a concatenated dataframe and save it as a text file
@@ -121,6 +135,9 @@ head(fst_df)
 
 
 # Append information about simplified chromosome names (from RefSeq to numeric)
+fst_df <- fst_df %>%
+  filter(chr %in% chrom_df$chr)
+
 fst_df <- left_join(fst_df, chrom_df, by = "chr")
 nCHR <- length(unique(fst_df$chr))
 
@@ -146,39 +163,42 @@ final_df$linkage_group <- factor(final_df$linkage_group, levels = chrom_df$linka
 #################################################################
 # Part 2: Plot the data
 
-# Pick a color scheme and labelling scheme
-show_col(viridis_pal(option = "plasma")(20))
-mypalette <- c("#0D0887FF", "#0D0887FF", "#0D0887FF", "#D14E72FF", "#D14E72FF", "#FA9E3BFF") #specify viridis
+# Specify a color palette
+temp_df <- meta_df %>%
+  subset(pop %in% COMPARISONS) %>%
+  select(mypalette)
 
-color_df <- as.data.frame(cbind(POPLIST, mypalette)) %>%
-  filter(POPLIST %in% COMPARISONS)
-
-mycols <- as.vector(color_df$mypalette)
-
-manhplot <- ggplot() +
-  geom_point(data = final_df, aes(x = midpos_Mb, y = fst, color = POP2), 
-             alpha = 1, size = 0.5) +
-  scale_color_manual(values = mycols) +
-  facet_grid(POP2 ~ linkage_group, scales = "free_x") +
-  ylab(expression(italic(F[ST]))) +
-  xlab("Chromosome position (Mb)") +
-  theme_bw() +
-  ggtitle(FOCALPOP) +
-  # set tick mark spacing
-  scale_y_continuous(breaks = c(0.0, 0.2, 0.4)) +
-  scale_x_continuous(breaks = c(15,30)) +
+MYPALETTE <- temp_df$mypalette
+  
+# Set the ggplot theme
+theme_set(
   theme( 
     legend.position = "none",
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.text.x = element_text(angle = 90, size = 7, vjust = 0.5),
+    axis.text.y = element_text(angle = 0, size = 7),
     panel.background = element_rect(fill = "white"), 
-    panel.spacing = unit(0,"lines")
+    panel.spacing = unit(0,"lines"),
+    strip.text.y = element_text(angle = 0) #rotate facet labels
   )
+)
+
+manhplot <- ggplot() +
+  geom_point(data = final_df, aes(x = midpos_Mb, y = fst, color = POP2), 
+             alpha = 1, size = 0.4) +
+  scale_color_manual(values = as.character(MYPALETTE)) +
+  facet_grid(POP2 ~ linkage_group, scales = "free_x") +
+  ylab(expression(italic(F[ST]))) +
+  xlab("Chromosome position (Mb)") +
+  ggtitle(FOCALPOP) +
+  # set tick mark spacing
+  scale_y_continuous(breaks = c(0.0, 0.5, 1)) +
+  scale_x_continuous(breaks = c(15,30))
 
 
 # Save the plot to a pdf file
 
-ggsave(paste0(FOCALPOP,"_", OUTFILE), plot = manhplot, width = 11, height = 5, units = "in")
+ggsave(paste0(FOCALPOP,"_", OUTFILE), plot = manhplot, width = 10, height = 6, units = "in")
 
 ```
